@@ -198,14 +198,43 @@ const Combobox = {
   },
 
   render() {
-    const { prefixCls, defaultOpenValue, value: propValue } = this;
+    const { prefixCls, defaultOpenValue, value: propValue, format } = this;
     const value = propValue || defaultOpenValue;
+
+    if (format) {
+      let idx = 0
+      let char = format[idx]    
+      const formatAllowedChars = ['h', 'm', 's', 'a']
+      const elemsOrder = []
+      while (char) {
+        if (formatAllowedChars.includes(char) && !elems.includes(char)) {
+          elems.push(char)
+        }
+        char = char[++idx]
+      }
+
+      const elems = []
+      const bindMap = {
+        'h': this.getHourSelect.bind(this, (value.hour())),
+        'm': this.getMinuteSelect.bind(this, (value.minute())),
+        's': this.getSecondSelect.bind(this, (value.second())),
+        'a': this.getAMPMSelect.bind(this, (value.hour()))
+      }
+      if (elems.length > 0) {
+        for (const order of elemsOrder) {
+          elems.push(bindMap[order]())
+        }
+      } else {
+        elems.push(bindMap['h']())
+        elems.push(bindMap['m']())
+        elems.push(bindMap['s']())
+        elems.push(bindMap['a']())
+      }
+    }
+
     return (
       <div class={`${prefixCls}-combobox`}>
-        {this.getHourSelect(value.hour())}
-        {this.getMinuteSelect(value.minute())}
-        {this.getSecondSelect(value.second())}
-        {this.getAMPMSelect(value.hour())}
+        {elems.map(elem => elem)}
       </div>
     );
   },
